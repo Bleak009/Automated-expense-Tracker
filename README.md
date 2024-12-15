@@ -30,7 +30,7 @@ https://ai.google.dev/gemini-api/docs/api-key<br>
 and add api key in settings file
 6. If using LLaMA download ollama,<br>
 https://ollama.com/download
-<br>install and configure model according to llama.txt
+<br>install and configure model according to llama.md
 
 8. Modify dbconnector.py with your database details (password and database_name).
 
