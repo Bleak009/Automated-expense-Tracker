@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    <style>
+      body {
+        font-family: "Poppins", sans-serif;
+        margin: 0;
+        padding: 0;
+        background: linear-gradient(135deg, #4fc3f7, #81c784);
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      header {
+        display: flex;
+        align-items: center;
+        padding: 10px 20px;
+        background-color: rgba(255, 255, 255, 0.9);
+        border-bottom: 1px solid #ddd;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      header a {
+        text-decoration: none;
+        color: #333;
+        font-weight: bold;
+        font-size: 22px;
+        font-family: "Poppins", sans-serif;
+      }
+
+      .hamburger {
+        font-size: 28px;
+        cursor: pointer;
+        color: #333;
+      }
+
+      .container {
+        padding: 20px;
+        overflow: auto;
+        gap: 15px;
+      }
+
+      .cards-container,
+      .dashboard-overview {
+        display: flex;
+        justify-content: space-between;
+        gap: 15px;
+        margin-bottom: 15px;
+      }
+
+      .card {
+        background-color: rgba(255, 255, 255, 0.9);
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        padding: 15px;
+        text-align: center;
+        width: 32%;
+        transition: transform 0.2s ease;
+      }
+
+      .card:hover {
+        transform: scale(1.05);
+      }
+
+      .card h3 {
+        margin-bottom: 8px;
+        color: #555;
+      }
+
+      .card .amount {
+        font-size: 24px;
+        font-weight: bold;
+        color: #2e7d32;
+      }
+
+      .card .percentage {
+        font-size: 14px;
+        color: #d32f2f;
+      }
+
+      .chart-container {
+        width: 49%;
+        background-color: rgba(255, 255, 255, 0.9);
+        padding: 15px;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        font-family: "Poppins", sans-serif;
+        font-size: 13px;
+      }
+
+      .slider-container {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+
+      .slider-container label {
+        font-weight: lighter;
+        color: #545454;
+      }
+
+      .rangeLabel {
+        font-weight: lighter;
+        color: #545454;
+      }
+
+      input[type="range"] {
+        appearance: none; /* Standard for modern browsers */
+        -webkit-appearance: none; /* WebKit browsers */
+        -moz-appearance: none; /* Firefox */
+        width: 100%;
+        height: 8px;
+        background: #cfd8dc;
+        border-radius: 5px;
+        outline: none;
+        transition: background 0.3s;
+        cursor: pointer;
+      }
+
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 16px;
+        height: 16px;
+        background: #4caf50;
+        border-radius: 50%;
+        cursor: pointer;
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+        transition: background 0.3s;
+      }
+
+      input[type="range"]:hover {
+        background: #b0bec5;
+      }
+
+      h1 {
+        color: white;
+        margin-bottom: 15px;
+        text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.2);
+      }
+
+      .side-panel {
+        height: 100%;
+        width: 0;
+        position: fixed;
+        top: 0;
+        left: 0;
+        background: linear-gradient(135deg, #4fc3f7, #81c784);
+        overflow-x: hidden;
+        transition: width 0.5s;
+        padding-top: 60px;
+        z-index: 2;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+      }
+
+      .side-panel-content {
+        color: white;
+        padding: 20px;
+      }
+
+      .side-panel a {
+        display: block;
+        color: white;
+        padding: 10px 0;
+        text-decoration: none;
+      }
+
+      .side-panel a:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+        padding-left: 10px;
+      }
+
+      .show-panel {
+        width: 250px;
+      }
+
+      .close-btn {
+        font-size: 30px;
+        position: absolute;
+        top: 15px;
+        right: 25px;
+        cursor: pointer;
+        color: white;
+        transition: color 0.3s;
+      }
+
+      .close-btn:hover {
+        color: #e57373;
+      }
+
+      @media (max-width: 768px) {
+        .cards-container,
+        .dashboard-overview {
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .chart-container {
+          width: 100%;
+        }
+
+        .card {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <i class="fas fa-bars hamburger" id="hamburgerMenu">
+        <a href="#">&nbsp;&nbsp;&nbsp;Dashboard</a>
+      </i>
+    </header>
+
+    <div class="container">
+      <div class="cards-container">
+        <div class="card">
+          <h3>Day Expenses</h3>
+          <div class="amount" id="dayExpenses">₹ 0.00</div>
+        </div>
+        <div class="card">
+          <h3>Month Expenses</h3>
+          <div class="amount" id="monthExpenses">₹ 0.00</div>
+        </div>
+        <div class="card">
+          <h3>Year Expenses</h3>
+          <div class="amount" id="yearExpenses">₹ 0.00</div>
+        </div>
+      </div>
+    </div>
+    
+    
+
+      <div class="dashboard-overview">
+        <div class="chart-container">
+          <canvas id="donutChart"></canvas>
+        </div>
+        <div class="chart-container">
+          <div class="slider-container">
+            <label for="rangeSlider">Date&nbsp;Range&nbsp;(Months):</label>
+            <input
+              type="range"
+              id="rangeSlider"
+              min="1"
+              max="12"
+              value="1"
+              step="1"
+            />
+            <span id="rangeLabel">1</span>
+          </div>
+          <canvas id="lineChart"></canvas>
+        </div>
+      </div>
+
+      <div class="side-panel" id="sidePanel">
+        <div class="side-panel-content">
+          <span class="close-btn" id="closeBtn">&times;</span>
+          <a href="{{ url_for('main.dashboard') }}">Dashboard</a>
+          <a href="{{ url_for('main.upload') }}">Upload Files</a>
+          <a href="{{ url_for('main.list') }}">Expense List</a>
+          <a href="{{ url_for('main.insights') }}">Insights</a>
+          </div>
+      </div>
+    </div>
+
+    <script>
+      async function fetchSummaryData() {
+    try {
+        // Fetch data from the backend
+        const response = await fetch("/api/summary-data");
+        const data = await response.json();
+
+        if (data.error) {
+            console.error("Error fetching summary data:", data.error);
+            return;
+        }
+
+        // Check if the fetched data contains the expected properties
+        if (
+            typeof data.day_expenses === "number" &&
+            typeof data.month_expenses === "number" &&
+            typeof data.year_expenses === "number"
+        ) {
+            // Update the HTML with fetched data
+            document.getElementById("dayExpenses").textContent = `₹ ${data.day_expenses.toFixed(2)}`;
+            document.getElementById("monthExpenses").textContent = `₹ ${data.month_expenses.toFixed(2)}`;
+            document.getElementById("yearExpenses").textContent = `₹ ${data.year_expenses.toFixed(2)}`;
+        } else {
+            console.error("Invalid data structure:", data);
+        }
+    } catch (error) {
+        console.error("Error fetching summary data:", error);
+    }
+}
+
+// Call the function to load the data when the page loads
+document.addEventListener("DOMContentLoaded", fetchSummaryData);
+
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
+    <script>
+
+
+      // Function to fetch data and render the donut chart
+      async function renderDonutChart() {
+        const donutCtx = document.getElementById("donutChart").getContext("2d");
+        const colors = [
+          "#76d9b8",
+          "#f48fb1",
+          "#90caf9",
+          "#ffcc80",
+          "#a5d6a7",
+          "#ce93d8",
+          "#ffab91",
+          "#81d4fa",
+          "#e6ee9c",
+          "#dce775",
+          "#bcaaa4",
+          "#e57373",
+          "#ba68c8",
+          "#ffd54f",
+          "#9575cd",
+          "#4db6ac",
+        ];
+
+        try {
+          // Fetch data from the backend API
+          const response = await fetch("/api/expenses/donut-chart");
+          const categoryData = await response.json();
+
+          // Check if there was an error in the backend response
+          if (response.ok) {
+            const labels = Object.keys(categoryData);
+            const data = Object.values(categoryData);
+
+            // Create the donut chart
+            const donutChart = new Chart(donutCtx, {
+              type: "doughnut",
+              data: {
+                labels: labels,
+                datasets: [
+                  {
+                    data: data,
+                    backgroundColor: colors.slice(0, labels.length), // Match colors with labels
+                  },
+                ],
+              },
+              options: {
+                responsive: true,
+                plugins: {
+                  legend: {
+                    position: "right",
+                  },
+                },
+              },
+            });
+          } else {
+            console.error("Error fetching data:", categoryData.error);
+            alert("Failed to load chart data. Please try again.");
+          }
+        } catch (error) {
+          console.error("Error:", error);
+          alert("An error occurred while fetching the data.");
+        }
+      }
+
+      // Call the function to render the chart when the page loads
+      renderDonutChart();
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const lineCtx = document.getElementById("lineChart").getContext("2d");
+        const rangeSlider = document.getElementById("rangeSlider");
+        const rangeLabel = document.getElementById("rangeLabel");
+
+        let lineChart;
+
+        // Fetch data and initialize the chart
+        async function fetchAndRenderLineChart(months) {
+    try {
+        const response = await fetch(`/api/line-chart-data?months=${months}`);
+        const data = await response.json();
+
+        if (data.error) {
+            console.error("Failed to fetch line chart data:", data.error);
+            return;
+        }
+
+        const { dates, amounts } = data;
+
+        if (lineChart) {
+            // Update existing chart
+            lineChart.data.labels = dates;
+            lineChart.data.datasets[0].data = amounts;
+            lineChart.update();
+        } else {
+            // Create a new chart
+            lineChart = new Chart(lineCtx, {
+                type: "line",
+                data: {
+                    labels: dates,
+                    datasets: [
+                        {
+                            label: "Expenses",
+                            data: amounts,
+                            backgroundColor: "rgba(255, 159, 64, 0.2)",
+                            borderColor: "rgba(255, 159, 64, 1)",
+                            borderWidth: 2,
+                        },
+                    ],
+                },
+            });
+        }
+    } catch (error) {
+        console.error("Error fetching line chart data:", error);
+    }
+}
+
+
+        // Event listener for range slider
+        rangeSlider.addEventListener("input", () => {
+        const months = rangeSlider.value; // Get the slider's current value
+        rangeLabel.textContent = months; // Update the label with the current value
+        fetchAndRenderLineChart(months); // Fetch and update the chart
+    });
+
+        // Fetch data for the initial load
+        fetchAndRenderLineChart(rangeSlider.value);
+
+        // Sidebar functionality
+        document
+          .getElementById("hamburgerMenu")
+          .addEventListener("click", () => {
+            const panel = document.getElementById("sidePanel");
+            panel.style.width = panel.style.width === "250px" ? "0" : "250px";
+          });
+
+        document.getElementById("closeBtn").addEventListener("click", () => {
+          document.getElementById("sidePanel").style.width = "0";
+        });
+      });
+    </script>
+  </body>
+</html>

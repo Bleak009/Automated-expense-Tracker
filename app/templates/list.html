@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Expense List</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    <style>
+      /* General Styling */
+      body {
+        font-family: "Poppins", sans-serif;
+        margin: 0;
+        padding: 0;
+        background: linear-gradient(135deg, #4fc3f7, #81c784);
+        height: 100vh;
+        overflow-y: auto;
+        opacity: 0;
+        animation: fadeIn 0.5s forwards;
+      }
+
+      @keyframes fadeIn {
+        to {
+          opacity: 1;
+        }
+      }
+
+      header {
+        display: flex;
+        align-items: center;
+        padding: 10px 20px;
+        background-color: rgba(255, 255, 255, 0.9);
+        border-bottom: 1px solid #ddd;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      header a {
+        text-decoration: none;
+        color: #333;
+        font-weight: bold;
+        font-size: 22px;
+        margin-left: 15px;
+      }
+
+      .hamburger {
+        font-size: 28px;
+        cursor: pointer;
+        color: #333;
+        transition: transform 0.2s ease-in-out;
+      }
+
+      .hamburger:hover {
+        transform: scale(1.1);
+      }
+
+      .container {
+        padding: 20px;
+        max-width: 900px;
+        margin: 0 auto;
+      }
+
+      .expense-list {
+        background: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .expense-list h2 {
+        font-size: 1.5rem;
+        color: #333;
+        margin-bottom: 20px;
+      }
+
+      .table-container {
+        overflow-x: auto;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+      }
+
+      th,
+      td {
+        text-align: left;
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+      }
+
+      th {
+        background-color: #f8f9fa;
+        font-weight: bold;
+        color: #333;
+      }
+
+      tr:hover {
+        background-color: #f1f1f1;
+      }
+
+      .action-buttons {
+        display: flex; /* Align buttons side by side */
+        gap: 5px; /* Add spacing between buttons */
+        white-space: nowrap; /* Prevent wrapping */
+      }
+
+      .action-buttons a,
+      .action-buttons button {
+        text-decoration: none;
+        padding: 5px 10px;
+        border-radius: 5px;
+        color: white;
+        font-size: 12px;
+        border: none;
+        cursor: pointer;
+        display: inline-block; /* Ensure proper spacing within the table */
+      }
+
+      .edit-btn {
+        background-color: #007bff; /* Blue background */
+      }
+
+      .edit-btn:hover {
+        background-color: #0056b3; /* Darker blue on hover */
+      }
+
+      .delete-btn {
+        background-color: #dc3545; /* Red background */
+      }
+
+      .delete-btn:hover {
+        background-color: #a71d2a; /* Darker red on hover */
+      }
+
+      /* Sidebar Styling */
+      .side-panel {
+        height: 100%;
+        width: 0;
+        position: fixed;
+        top: 0;
+        left: 0;
+        background: linear-gradient(135deg, #4fc3f7, #81c784);
+        overflow-x: hidden;
+        transition: width 0.5s;
+        padding-top: 60px;
+        z-index: 2;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+      }
+
+      .side-panel-content {
+        color: white;
+        padding: 20px;
+      }
+
+      .side-panel a {
+        display: block;
+        color: white;
+        padding: 10px 0;
+        text-decoration: none;
+      }
+
+      .side-panel a:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+        padding-left: 10px;
+      }
+
+      .show-panel {
+        width: 250px;
+      }
+
+      .close-btn {
+        font-size: 30px;
+        position: absolute;
+        top: 15px;
+        right: 25px;
+        cursor: pointer;
+        color: white;
+        transition: color 0.3s;
+      }
+
+      .close-btn:hover {
+        color: #e57373;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <i class="fas fa-bars hamburger" id="hamburgerMenu"></i>
+      <a href="#">Expense List</a>
+    </header>
+    <div class="container">
+      <div class="expense-list">
+        <h2>All Expenses</h2>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Description</th>
+                <th>Category</th>
+                <th>Amount</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for expense in expenses %}
+              <tr>
+                <td>{{ expense.expense_date }}</td>
+                <td>{{ expense.description }}</td>
+                <td>{{ expense.category }}</td>
+                <td>{{ expense.amount }}</td>
+                <td class="action-buttons">
+                  <a href="/edit/{{ expense.expense_id }}" class="edit-btn"
+                    >Edit</a
+                  >
+                  <form
+                    action="/delete/{{ expense.expense_id }}"
+                    method="POST"
+                    style="margin: 0"
+                  >
+                    <button type="submit" class="delete-btn">Delete</button>
+                  </form>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-panel" id="sidePanel">
+      <div class="side-panel-content">
+        <span class="close-btn" id="closeBtn">&times;</span>
+        <a href="{{ url_for('main.dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('main.upload') }}">Upload Files</a>
+        <a href="{{ url_for('main.list') }}">Expense List</a>
+        <a href="{{ url_for('main.insights') }}">Insights</a>
+      </div>
+    </div>
+
+    <script>
+      // Side Panel Toggle
+      document.getElementById("hamburgerMenu").addEventListener("click", () => {
+        const panel = document.getElementById("sidePanel");
+        panel.style.width = panel.style.width === "250px" ? "0" : "250px";
+      });
+
+      document.getElementById("closeBtn").addEventListener("click", () => {
+        document.getElementById("sidePanel").style.width = "0";
+      });
+    </script>
+  </body>
+</html>
